@@ -2,28 +2,31 @@
 {% block content %}
 <style>
     .w3-half { margin-top: 3rem; }
-    #my_camera { width: 100%; height: auto;}
     .w3-table-all th { background-color: red; color: white; }
     .w3-table-all th, .w3-table-all td {
         text-align: center;
     }
-	.cam 
-	{
-		display: flex;
-		gap: 5rem;
-	}
-	@media(max-width: 500px)
-	{
-		.cam 
-		{
-			flex-direction: column;
-			margin: auto;
-		}
-		#my_camera
-		{
-			margin: auto;
-		}
-	}
+    .cam {
+        display: flex;
+        gap: 5rem;
+    }
+    @media(max-width: 500px) {
+        .cam {
+            flex-direction: column-reverse;
+            margin: auto;
+        }
+        #my_camera {
+            margin: auto;
+        }
+        #my_result {
+            margin: auto;
+            margin-bottom: -4rem;
+        }
+    }
+    #my_camera, #my_result img {
+        width: 320px;
+        height: 240px;
+    }
 </style>
 
 <div class="w3-row-padding">
@@ -34,6 +37,7 @@
                     <th>ID</th>
                     <th>NAME</th>
                     <th>IMAGE</th>
+                    <th>Delete</th>
                 </tr>
                 {% for student in data %}
                 <tr>
@@ -42,17 +46,23 @@
                     <td>
                         <img src="{{ student["image"] }}" alt="Profile Image" style="height: 60px;">
                     </td>
+                    <td>
+                        <form action="/delete_student" method="POST" style="display:inline;">
+                            <input type="hidden" name="idno" value="{{ student['id'] }}">
+                            <button type="button" class="w3-button w3-red" onclick="confirmDelete({{ student['id'] }})">&times;</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </table>
         </div>
     </div>
     <div class="w3-half">
-        <div class="w3-container w3-padding ">
+        <div class="w3-container w3-padding">
             <form id="student_form" method="POST" onsubmit="return false;">
                 <div class="cam">
-                <div id="my_camera"></div>
-                <div id="my_result"></div>
+                    <div id="my_camera"></div>
+                    <div id="my_result"></div>
                 </div>
                 <div style="align-items: center; justify-content: center; display: flex; width: 100%;">
                     <button type="button" class="w3-button w3-red w3-margin-top" onclick="snapshot()">Snap</button>
@@ -63,7 +73,7 @@
                 </p>
                 <input type="hidden" name="image_data" id="image_data">
                 <button type="button" class="w3-button w3-blue w3-margin-right" onclick="take_snapshot()">REGISTER</button>
-                <button type="button" class="w3-button w3-red w3-margin-" onclick="resetForm()">CANCEL</button>
+                <button type="button" class="w3-button w3-red w3-margin" onclick="resetForm()">CANCEL</button>
             </form>
         </div>
     </div>
@@ -73,7 +83,7 @@
 <script src="{{ url_for('static', filename='js/webcam.min.js') }}"></script>
 <script>
     Webcam.set({
-        width: 240,
+        width: 320,
         height: 240,
         image_format: 'jpeg',
         jpeg_quality: 90
@@ -83,7 +93,7 @@
     function snapshot() {
         Webcam.snap(data_uri => {
             document.getElementById('image_data').value = data_uri;
-            document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '"/>';
+            document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '" style="width: 320px; height: 240px;"/>';
         });
     }
 
@@ -134,6 +144,52 @@
         document.getElementById('my_result').innerHTML = ''; 
         Webcam.reset(); 
         Webcam.attach('#my_camera');
+    }
+    
+    function confirmDelete(studentId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to delete this student?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/delete_student', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idno: studentId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: 'The student has been deleted.',
+                            timer: 2000
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'An error occurred while deleting the student.'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An unexpected error occurred.'
+                    });
+                });
+            }
+        });
     }
 </script>
 {% endblock %}

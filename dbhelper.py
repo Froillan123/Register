@@ -1,3 +1,4 @@
+#dbhelper.py
 from sqlite3 import connect, Row
 import sqlite3
 
@@ -8,16 +9,26 @@ def get_db_connection():
     db.row_factory = Row  
     return db
 
-def userlogin(username: str, password: str) -> bool:
-    sql = "SELECT * FROM users WHERE username = ? AND password = ?"
-    db = connect(DATABASE)
-    cursor = db.cursor()
-    cursor.row_factory = Row
-    cursor.execute(sql, (username, password))
-    data = cursor.fetchall()
-    cursor.close()
-    db.close()
-    return len(data) > 0
+def delete_all_students():
+    try:
+        db = connect('students.db')
+        cursor = db.cursor()
+
+        # Delete all records in the students table
+        cursor.execute("DELETE FROM students")
+
+        # Reset the AUTOINCREMENT sequence in sqlite_sequence
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name = 'students'")
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        return {'status': 'success', 'message': 'All students deleted and ID reset.'}
+    except Exception as e:
+        return {'status': 'error', 'message': f"An error occurred: {e}"}
+
+
+
 
 def getall_students():
     sql = "SELECT * FROM students"
