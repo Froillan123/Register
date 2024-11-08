@@ -10,6 +10,18 @@
     .w3-table-all th, .w3-table-all td {
         text-align: center;
     }
+	.cam 
+	{
+		display: flex;
+		gap: 5rem;
+	}
+	@media(max-width: 500px)
+	{
+		.cam 
+		{
+			flex-direction: column-reverse;
+		}
+	}
 </style>
 
 <div class="w3-row-padding">
@@ -36,7 +48,7 @@
     <div class="w3-half">
         <div class="w3-container w3-padding ">
             <form id="student_form" method="POST" onsubmit="return false;">
-                <div style="display: flex; gap: 5rem;">
+                <div class="cam">
                 <div id="my_camera"></div>
                 <div id="my_result"></div>
                 </div>
