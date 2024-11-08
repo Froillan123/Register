@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .w3-half { margin-top: 3rem; }
+    #my_camera { width: 100%; height: auto; }
+    @media screen and (max-width: 409px) {
+        #my_camera { width: 100vw; height: auto; }
+    }
+    .w3-table-all th { background-color: red; color: white; }
+    .w3-table-all th, .w3-table-all td {
+        text-align: center;
+    }
+</style>
+
+<div class="w3-row-padding">
+    <div class="w3-half">
+        <div class="w3-container w3-padding">
+            <table class="w3-table-all">
+                <tr>
+                    <th>ID</th>
+                    <th>NAME</th>
+                    <th>IMAGE</th>
+                </tr>
+                {% for student in data %}
+                <tr>
+                    <td>{{ student["id"] }}</td>
+                    <td>{{ student["name"] }}</td>
+                    <td>
+                        <img src="{{ student["image"] }}" alt="Profile Image" style="height: 60px;">
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div class="w3-half">
+        <div class="w3-container w3-padding ">
+            <form id="student_form" method="POST" onsubmit="return false;">
+                <div style="display: flex; gap: 5rem;">
+                <div id="my_camera"></div>
+                <div id="my_result"></div>
+                </div>
+                <div style="align-items: center; justify-content: center; display: flex; width: 100%;">
+                    <button type="button" class="w3-button w3-red w3-margin-top" onclick="snapshot()">Snap</button>
+                </div>
+                <p>
+                    <label><b>NAME</b></label>
+                    <input type="text" name="name" id="name" class="w3-input" required>
+                </p>
+                <input type="hidden" name="image_data" id="image_data">
+                <button type="button" class="w3-button w3-blue w3-margin-right" onclick="take_snapshot()">REGISTER</button>
+                <button type="button" class="w3-button w3-red w3-margin-" onclick="resetForm()">CANCEL</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', filename='js/webcam.min.js') }}"></script>
+<script>
+        Webcam.set({
+        width: 320,
+        height: 240,
+        image_format: 'jpeg',
+        jpeg_quality: 90
+    });
+    Webcam.attach('#my_camera');
+
+    function snapshot() {
+        Webcam.snap(data_uri => {
+            document.getElementById('image_data').value = data_uri;
+            document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '"/>';
+        });
+    }
+
+    function take_snapshot() {
+        const name = document.getElementById('name').value;
+        if (name) {
+            const data_uri = document.getElementById('image_data').value;
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('image_data', data_uri);
+
+            fetch("{{ url_for('add_student_route') }}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Student added successfully!'
+                    }).then(() => {
+                        window.location.href = "{{ url_for('student_list') }}";
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'An error occurred while adding the student.'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+        } else {
+            Swal.fire({ icon: 'warning', title: 'Incomplete Information', text: 'Please enter the name before registering.' });
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('student_form').reset();
+        document.getElementById('my_result').innerHTML = ''; 
+        Webcam.reset(); 
+        Webcam.attach('#my_camera');
+    }
+</script>
+{% endblock %}
