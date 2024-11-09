@@ -24,6 +24,9 @@
             margin-left: -0.7rem;
         }
         #my_camera, #my_result {
+            width: 100%;  /* Full width on mobile */
+            max-width: 300px;  /* Optional max width for smaller displays */
+            height: auto; /* Adjust height to maintain aspect ratio */
             margin: auto;
         }
     }
@@ -90,6 +93,7 @@
     function initializeCamera() {
         Webcam.set({
             width: 290,
+            height: 240,
             image_format: 'jpeg',
             jpeg_quality: 90,
             constraints: {
