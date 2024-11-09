@@ -6,6 +6,10 @@
     .w3-table-all th, .w3-table-all td {
         text-align: center;
     }
+    #my_camera
+    {
+        margin: auto;
+    }
     .cam {
         display: flex;
         gap: 5rem;
@@ -64,8 +68,9 @@
                     <div id="my_camera"></div>
                     <div id="my_result"></div>
                 </div>
-                <div style="align-items: center; justify-content: center; display: flex; width: 100%;">
+                <div style="align-items: center; justify-content: center; display: flex; flex-direction: column; width: 100%;">
                     <button type="button" class="w3-button w3-red w3-margin-top" onclick="snapshot()">Snap</button>
+                    <button type="button" class="w3-button w3-blue w3-margin-top" onclick="toggleCamera()">Switch Camera</button>
                 </div>
                 <p>
                     <label><b>NAME</b></label>
@@ -82,21 +87,42 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ url_for('static', filename='js/webcam.min.js') }}"></script>
 <script>
-    Webcam.set({
-        width: 320,
-        height: 240,
-        image_format: 'jpeg',
-        jpeg_quality: 90
-    });
-    Webcam.attach('#my_camera');
+    // Variable to keep track of current camera facing mode (front or rear)
+    let isFrontCamera = true;
 
+    // Function to initialize the camera with the selected facing mode
+    function initializeCamera() {
+        Webcam.set({
+            width: 290,
+            image_format: 'jpeg',
+            jpeg_quality: 90,
+            constraints: {
+                facingMode: isFrontCamera ? 'user' : 'environment'
+            }
+        });
+        Webcam.attach('#my_camera');
+    }
+
+    // Call the function to initialize the camera when the page loads
+    initializeCamera();
+
+    // Function to take a snapshot and display it in the result div
     function snapshot() {
         Webcam.snap(data_uri => {
             document.getElementById('image_data').value = data_uri;
-            document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '" style="width: 320px; height: 240px;"/>';
+            document.getElementById('my_result').innerHTML = 
+                '<img src="' + data_uri + '" style="width: 290px; height: 227px;"/>';
         });
     }
 
+    // Function to toggle the camera between front and rear
+    function toggleCamera() {
+        isFrontCamera = !isFrontCamera;  // Toggle camera mode
+        Webcam.reset();  // Reset current camera
+        initializeCamera();  // Re-initialize with the new facing mode
+    }
+
+    // Function to register the student data
     function take_snapshot() {
         const name = document.getElementById('name').value;
         if (name) {
@@ -135,17 +161,23 @@
                 });
             });
         } else {
-            Swal.fire({ icon: 'warning', title: 'Incomplete Information', text: 'Please enter the name before registering.' });
+            Swal.fire({ 
+                icon: 'warning', 
+                title: 'Incomplete Information', 
+                text: 'Please enter the name before registering.' 
+            });
         }
     }
 
+    // Function to reset the form and re-attach the camera
     function resetForm() {
         document.getElementById('student_form').reset();
         document.getElementById('my_result').innerHTML = ''; 
         Webcam.reset(); 
-        Webcam.attach('#my_camera');
+        initializeCamera();
     }
-    
+
+    // Function to confirm and delete a student entry
     function confirmDelete(studentId) {
         Swal.fire({
             title: 'Are you sure?',
@@ -192,4 +224,5 @@
         });
     }
 </script>
+
 {% endblock %}
