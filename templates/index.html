@@ -89,7 +89,6 @@
     // Variable to keep track of current camera facing mode (front or rear)
     let isFrontCamera = true;
 
-    // Function to initialize the camera with the selected facing mode
     function initializeCamera() {
         Webcam.set({
             width: 290,
@@ -111,7 +110,7 @@
         Webcam.snap(data_uri => {
             document.getElementById('image_data').value = data_uri;
             document.getElementById('my_result').innerHTML = 
-                '<img src="' + data_uri + '" style="width: 290px; height: 227px;"/>';
+                '<img src="' + data_uri + '"/>';
         });
     }
 
