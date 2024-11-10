@@ -124,12 +124,28 @@
 
     // Function to take a snapshot and display it in the result div
     function snapshot() {
-        Webcam.snap(data_uri => {
-            document.getElementById('image_data').value = data_uri;
-            document.getElementById('my_result').innerHTML = 
-                '<img src="' + data_uri + '"/>';
-        });
-    }
+    Webcam.snap(data_uri => {
+        document.getElementById('image_data').value = data_uri;
+
+        // Create an image element
+        const imgElement = document.createElement('img');
+        imgElement.src = data_uri;
+
+        // Check the screen width and apply the styles
+        if (window.innerWidth > 500) {
+            imgElement.style.width = '320px';  // Width matches camera resolution
+            imgElement.style.height = '240px'; // Height matches camera resolution
+        } else {
+            imgElement.style.width = '190px';  // Smaller width for smaller screens
+            imgElement.style.height = '240px'; // Keep the same height for smaller screens
+        }
+
+        // Insert the image element into the 'my_result' div
+        document.getElementById('my_result').innerHTML = '';
+        document.getElementById('my_result').appendChild(imgElement);
+    });
+}
+
 
     // Function to toggle the camera between front and rear
     function toggleCamera() {
