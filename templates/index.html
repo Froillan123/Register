@@ -13,6 +13,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-left: -3rem;
     }
     .cam {
         display: flex;
@@ -21,9 +22,25 @@
     @media(max-width: 500px) {
         .cam {
             flex-direction: column;
+            gap: 1rem;
+        }
+        #my_result {
+            margin-left: -1rem; 
+            width: 320px; 
+            height: 240px; 
+            display: flex; 
+            margin-top: 1rem; 
+            background: black;
+        }
+        #my_camera {
+            margin-left: -1rem;
+        }
+        .w3-half {
+            width: 100%; /* Ensure the container spans full width on smaller screens */
         }
     }
 </style>
+
 
 <div class="w3-row-padding">
     <div class="w3-half">
@@ -84,10 +101,14 @@
 
     function initializeCamera() {
         Webcam.set({
-            width: 290,
+            width: 320,
             height: 240,
             image_format: 'jpeg',
             jpeg_quality: 90,
+            flip_horiz: true,
+            // dest_width: 280,
+            // dest_height: 200,
+            force_flash: false,
             constraints: {
                 facingMode: isFrontCamera ? 'user' : 'environment'
             }
